@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import edu.umich.imlc.collabrify.client.CollabrifyClient;
 import edu.umich.imlc.collabrify.client.exceptions.CollabrifyException;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -33,22 +34,28 @@ public class SessionActivity extends Activity
   private CheckBox withBaseFile;
   private Button undoButton;
   private Button redoButton;
-  private EditText editText;
+  private Button exitButton;
+  EditText editText;
   Button newSessionButton;
   private Button leaveSessionButton;
   Button joinSessionButton;
   
   private String userEmail;
   private String userDisplayName;
+  eventHandler handler;
   long sessionId;
   String sessionName;
   Boolean ownerOfSession;
   ByteArrayInputStream baseFileBuffer;
   ByteArrayOutputStream baseFileReceiveBuffer;
   
+  
+  ProgressDialog dialog;
+  
   CollabrifyClient myClient;
   
   private CollabrifyExtendedListener collabrifyListener;
+  TextWatcher textWatcher;
 
   protected TextView broadcastedText;
 
@@ -63,6 +70,7 @@ public class SessionActivity extends Activity
     
     undoButton = (Button) findViewById(R.id.UndoBT);
     redoButton = (Button) findViewById(R.id.RedoBT);
+    exitButton = (Button) findViewById(R.id.ExitBT);
     editText = (EditText) findViewById(R.id.editText);
     newSessionButton = (Button) findViewById(R.id.NewSessionBT);
     leaveSessionButton = (Button) findViewById(R.id.LeaveSessionBT);
@@ -72,9 +80,70 @@ public class SessionActivity extends Activity
     userDisplayName = getIntent().getStringExtra("userDisplayName");
     ownerOfSession = false;
     
+    dialog = new ProgressDialog(this);
     collabrifyListener = new CollabrifyExtendedListener(this);
+    handler = new eventHandler(userDisplayName);
     
     boolean getLatestEvent = false;
+    
+    //setTextWatcher for editText
+    textWatcher = new TextWatcher() {
+      private String prevS;
+      @Override
+      public void afterTextChanged(Editable s){}
+
+      @Override
+      public void beforeTextChanged(CharSequence s, int start, int count,
+          int after)
+      {
+        prevS = s.toString();
+      }
+
+      @Override
+      public void onTextChanged(CharSequence s, int start, int before, int count)
+      {
+        System.out.println(prevS);
+        System.out.println(s);
+        System.out.println(start);
+        System.out.println(before);
+        System.out.println(count);
+
+        ProtocalBuffer.Events.Builder builder = ProtocalBuffer.Events.newBuilder();
+        builder.setUsername(userDisplayName);
+        builder.setInsertCharacters(s.subSequence(start, start+count).toString());
+        builder.setInsertLength(count);
+        builder.setRemoveCharacters(prevS.subSequence(start, start+before).toString());
+        builder.setRemoveLength(before);
+        builder.setGlobalStart(start);
+        builder.setAfterGlobalOrderId(handler.getGlobalOrderId());
+        ProtocalBuffer.Events eventObj = builder.build();
+        
+        if (myClient != null && myClient.inSession()){
+          try
+          {
+            myClient.broadcast(eventObj.toString().getBytes(), "");
+          }
+          catch( CollabrifyException e )
+          {
+            e.printStackTrace();
+          }
+        }
+        
+        events event = new events();
+        event.setCharacters(builder.getInsertCharacters());
+        event.setGlobalCursor(builder.getGlobalStart());
+        event.setGlobalIndex(-1);
+        event.setInsertLength(count);
+        event.setRemovedCharacters(builder.getRemoveCharacters());
+        event.setRemoveLength(builder.getRemoveLength());
+        event.setUsername(builder.getUsername());
+        
+        handler.receiveLocal(event);
+      }
+      
+    };
+    
+    editText.addTextChangedListener(textWatcher);
 
     // Instantiate client object
     try
@@ -87,7 +156,6 @@ public class SessionActivity extends Activity
     {
       e.printStackTrace();
     }
-
 
     tags.add("sample");
     
@@ -103,17 +171,23 @@ public class SessionActivity extends Activity
           Random rand = new Random();
           sessionId = rand.nextInt(Integer.MAX_VALUE);
           sessionName = String.valueOf(sessionId);
+          ownerOfSession = true;
 
           if( withBaseFile.isChecked() )
           {
             // initialize basefile data for this example we will use the session
             // name as the data
-            //baseFileBuffer = new ByteArrayInputStream(sessionName.getBytes());
+            dialog = ProgressDialog.show(SessionActivity.this, "Uploading base file...", "Please wait...", true);
+
+            baseFileBuffer = new ByteArrayInputStream(editText.getText().toString().getBytes());
 
             myClient.createSessionWithBase(sessionName, tags, null, 5000);
           }
           else
           {
+            editText.removeTextChangedListener(textWatcher);
+            editText.setText("");
+            editText.addTextChangedListener(textWatcher);
             myClient.createSession(sessionName, tags, null, 5000);
           }
           Log.i(TAG, "Session name is " + sessionId);
@@ -152,8 +226,10 @@ public class SessionActivity extends Activity
       {
         try
         {
-          if( myClient.inSession() )
-            myClient.leaveSession(false);
+          if( myClient.inSession() ){
+            myClient.leaveSession(ownerOfSession);
+            ownerOfSession = false;
+          }
         }
         catch( CollabrifyException e )
         {
@@ -161,60 +237,16 @@ public class SessionActivity extends Activity
         }
       }
     });
-
-    TextWatcher textWatcher = new TextWatcher() {
-      private String prevS;
-      @Override
-      public void afterTextChanged(Editable s){}
-
-      @Override
-      public void beforeTextChanged(CharSequence s, int start, int count,
-          int after)
-      {
-        prevS = s.toString();
-      }
-
-      @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count)
-      {
-        System.out.println(prevS);
-        System.out.println(s);
-        System.out.println(start);
-        System.out.println(before);
-        System.out.println(count);
-
-        ProtocalBuffer.Events.Builder builder = ProtocalBuffer.Events.newBuilder();
-        builder.setUsername(userDisplayName);
-        builder.setInsertCharacters(s.subSequence(start, start+count).toString());
-        builder.setInsertLength(count);
-        builder.setRemoveCharacters(prevS.subSequence(start, start+before).toString());
-        builder.setRemoveLength(before);
-        builder.setGlobalStart(start);
-        ProtocalBuffer.Events eventObj = builder.build();
-        
-        if (myClient != null && myClient.inSession()){
-          try
-          {
-            myClient.broadcast(eventObj.toString().getBytes(), "");
-          }
-          catch( CollabrifyException e )
-          {
-            e.printStackTrace();
-          }
-        }
-        
-        events event = new events();
-        event.setCharacters(builder.getInsertCharacters());
-        event.setGlobalCursor(builder.getGlobalStart());
-        event.setInsertLength(count);
-        event.setRemovedCharacters(builder.getRemoveCharacters());
-        event.setRemoveLength(builder.getRemoveLength());
-        event.setUsername(builder.getUsername());
-      }
-      
-    };
     
-    editText.addTextChangedListener(textWatcher);
+    exitButton.setOnClickListener(new OnClickListener()
+    {
+      
+      @Override
+      public void onClick(View v)
+      {
+        finish();
+      }
+    });
   }
 
 

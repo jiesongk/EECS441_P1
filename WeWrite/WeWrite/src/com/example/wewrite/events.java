@@ -3,6 +3,8 @@ package com.example.wewrite;
 public class events {
   //need a constructor
   
+  events(){}
+  
   events(final events event)
   {
     this.globalCursor = event.globalCursor;
@@ -15,11 +17,6 @@ public class events {
     this.globalOrderId = event.globalOrderId;
   }
   
-  public events()
-  {
-    // TODO Auto-generated constructor stub
-  }
-
   private int globalCursor;
   private int removeLength;
   private int insertLength;
@@ -27,8 +24,9 @@ public class events {
   private String removedCharacters;
   private String username;
   private int afterGlobalOrderId;
-  private int globalOrderId;
+  private long globalOrderId;
   private int globalIndex;
+  private int localIndex;
   
   public int getGlobalCursor()
   {
@@ -65,7 +63,7 @@ public class events {
     return afterGlobalOrderId;
   }
   
-  public int getGlobalOrderId()
+  public long getGlobalOrderId()
   {
     return globalOrderId;
   }
@@ -73,6 +71,11 @@ public class events {
   public int getGlobalIndex()
   {
     return globalIndex;
+  }
+  
+  public int getLocalIndex()
+  {
+    return localIndex;
   }
   
   public void setGlobalCursor(int newGlobalCursor)
@@ -110,7 +113,7 @@ public class events {
     afterGlobalOrderId = newAfterGlobalOrderId;
   }
   
-  public void setGlobalOrderId(int newGlobalOrderId)
+  public void setGlobalOrderId(long newGlobalOrderId)
   {
     globalOrderId = newGlobalOrderId;
   }
@@ -118,5 +121,10 @@ public class events {
   public void setGlobalIndex(int newGlobalIndex)
   {
     globalIndex = newGlobalIndex;
+  }
+  
+  public void setLocalIndex(int newLocalIndex)
+  {
+    localIndex = newLocalIndex;
   }
 }

@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.android.gms.internal.ac;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.util.Log;
 import edu.umich.imlc.android.common.Utils;
@@ -32,7 +36,6 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           {
             activity.newSessionButton.setText("Create");
             activity.joinSessionButton.setText("Join");
-            activity.ownerOfSession = false;
           }
         });
       }
@@ -43,14 +46,40 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
       {
         Utils.printMethodName(activity.TAG);
         Log.d(activity.TAG, "RECEIVED SUB ID:" + subId);
+
         activity.runOnUiThread(new Runnable()
         {
           @Override
           public void run()
-          {
+          {            
+            activity.editText.removeTextChangedListener(activity.textWatcher);
+            activity.editText.setFocusable(false);
+
+            ProtocalBuffer.Events eventObj = ProtocalBuffer.Events.newBuilder().build();
             Utils.printMethodName(activity.TAG);
-            String message = new String(data);
-          //  broadcastedText.setText(message);
+            try
+            {
+              eventObj = ProtocalBuffer.Events.parseFrom(data);
+            }
+            catch( InvalidProtocolBufferException e )
+            {
+              e.printStackTrace();
+            }
+            
+            events event = new events();
+            event.setCharacters(eventObj.getInsertCharacters());
+            event.setGlobalCursor(eventObj.getGlobalStart());
+            event.setGlobalIndex(-1);
+            event.setInsertLength(eventObj.getInsertLength());
+            event.setRemovedCharacters(eventObj.getRemoveCharacters());
+            event.setRemoveLength(eventObj.getRemoveLength());
+            event.setUsername(eventObj.getUsername());
+            event.setGlobalOrderId(orderId);
+            
+            activity.handler.receiveGlobal(event, true);
+            activity.editText.setFocusable(true);
+            activity.editText.setFocusableInTouchMode(true);
+            activity.editText.addTextChangedListener(activity.textWatcher);
           }
         });
       }
@@ -70,6 +99,11 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
         }
         final AlertDialog.Builder builder = new AlertDialog.Builder(
             activity);
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int which) {
+            dialog.cancel();
+          } 
+        });
         builder.setTitle("Choose Session").setItems(
             sessionNames.toArray(new String[sessionList.size()]),
             new DialogInterface.OnClickListener()
@@ -113,7 +147,7 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           public void run()
           {
             activity.newSessionButton.setText(activity.sessionName);
-            activity.ownerOfSession = true;
+            activity.editText.setFocusable(false);
           }
         });
       }
@@ -125,7 +159,7 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
       }
 
       @Override //OK
-      public void onSessionJoined(long maxOrderId, long baseFileSize)
+      public void onSessionJoined(long maxOrderId, final long baseFileSize)
       {
         Log.i(activity.TAG, "Session Joined");
         if( baseFileSize > 0 )
@@ -135,12 +169,14 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
         }
         activity.runOnUiThread(new Runnable()
         {
-
           @Override
           public void run()
           {
             activity.joinSessionButton.setText(activity.sessionName);
-            activity.ownerOfSession = false;
+            if (baseFileSize > 0){
+              activity.editText.setFocusable(false);
+              activity.dialog = ProgressDialog.show(activity, "Downloading base file...", "Please wait...", true);
+            }
           }
         });
       }
@@ -164,7 +200,6 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
         }
         catch( IOException e )
         {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
         if( read == -1 )
@@ -204,7 +239,12 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
               @Override
               public void run()
               {
-                activity.broadcastedText.setText(activity.baseFileReceiveBuffer.toString());
+                activity.editText.removeTextChangedListener(activity.textWatcher);
+                activity.editText.setText(activity.baseFileReceiveBuffer.toString());
+                activity.dialog.dismiss();
+                activity.editText.addTextChangedListener(activity.textWatcher);
+                activity.editText.setFocusableInTouchMode(true);
+                activity.editText.setFocusable(true);
               }
             });
             activity.baseFileReceiveBuffer.close();
@@ -229,11 +269,12 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
       {
         activity.runOnUiThread(new Runnable()
         {
-
           @Override
           public void run()
           {
-            activity. broadcastedText.setText(activity.sessionName);
+            activity.dialog.dismiss();
+            activity.editText.setFocusableInTouchMode(true);
+            activity.editText.setFocusable(true);
           }
         });
         try
