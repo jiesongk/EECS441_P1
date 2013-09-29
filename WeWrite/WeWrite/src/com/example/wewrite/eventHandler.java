@@ -13,13 +13,29 @@ public class eventHandler {
   private List<events> global = new ArrayList<events>();
   private int localPointer = -1;
   private int confirmedGlobalOrderId = 0;
-  private int localComfirmPointer = -1;
+  //private int localConfirmPointer = -1;
   private String username;
   private SessionActivity activity;
   
   public int getGlobalOrderId()
   {
     return confirmedGlobalOrderId;
+  }
+  
+  public void clear()
+  {
+    while (!local.isEmpty())
+      local.remove(0);
+    while (!lastLocal.isEmpty())
+      lastLocal.remove(0);
+    while (!nextLocal.isEmpty())
+      nextLocal.remove(0);
+    while (!global.isEmpty())
+      global.remove(0);
+    localPointer = -1;
+    confirmedGlobalOrderId = 0;
+    //localConfirmPointer = -1;
+    
   }
   
   eventHandler(String username, SessionActivity activity)
