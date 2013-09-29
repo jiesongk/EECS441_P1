@@ -54,12 +54,11 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           public void run()
           {    
             Utils.printMethodName(activity.TAG);
-            int cursor = activity.editText.getSelectionStart();
 
             //activity.editText.setFocusable(false);
-            activity.editText.removeTextChangedListener(activity.textWatcher);
             activity.editText.setEnabled(false);
-
+            int cursor = activity.editText.getSelectionStart();
+            activity.editText.removeTextChangedListener(activity.textWatcher);
 
             System.out.println("Event Received!");
             try
@@ -88,9 +87,9 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
             
             System.out.println("Event does received!");
             
+            activity.editText.addTextChangedListener(activity.textWatcher);
             activity.editText.setSelection(cursor);
             activity.editText.setEnabled(true);
-            activity.editText.addTextChangedListener(activity.textWatcher);
             //activity.editText.setFocusableInTouchMode(true);
           }
         });

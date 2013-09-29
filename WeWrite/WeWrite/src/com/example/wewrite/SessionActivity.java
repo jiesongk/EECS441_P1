@@ -128,8 +128,8 @@ public class SessionActivity extends Activity
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
         //editText.setFocusable(false);
-        int cursor = editText.getSelectionStart();
         editText.removeTextChangedListener(textWatcher); 
+        int cursor = editText.getSelectionStart();
         editText.setEnabled(false);
 
         
@@ -176,9 +176,9 @@ public class SessionActivity extends Activity
         
         //editText.setFocusable(true);
         //editText.setFocusableInTouchMode(true);
-        editText.setEnabled(true);
         editText.addTextChangedListener(textWatcher);
         editText.setSelection(cursor);
+        editText.setEnabled(true);
       }
       
     };
@@ -196,7 +196,7 @@ public class SessionActivity extends Activity
       e.printStackTrace();
     }
 
-    tags.add("qq");
+    tags.add("mm");
     
     //new session OK
     newSessionButton.setOnClickListener(new OnClickListener()
@@ -250,6 +250,7 @@ public class SessionActivity extends Activity
       @Override
       public void onClick(View v)
       {
+        editText.setText("");
         try
         {
           myClient.requestSessionList(tags);
