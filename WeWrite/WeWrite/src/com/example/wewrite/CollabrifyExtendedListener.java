@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.wewrite.ProtocalBuffer.Events;
 import com.google.android.gms.internal.ac;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -51,35 +52,46 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
         {
           @Override
           public void run()
-          {            
-            activity.editText.removeTextChangedListener(activity.textWatcher);
-            activity.editText.setFocusable(false);
-
-            ProtocalBuffer.Events eventObj = ProtocalBuffer.Events.newBuilder().build();
+          {    
             Utils.printMethodName(activity.TAG);
+            int cursor = activity.editText.getSelectionStart();
+
+            //activity.editText.setFocusable(false);
+            activity.editText.removeTextChangedListener(activity.textWatcher);
+            activity.editText.setEnabled(false);
+
+
+            System.out.println("Event Received!");
             try
             {
-              eventObj = ProtocalBuffer.Events.parseFrom(data);
+              Events eventBuilderObj = Events.parseFrom(data);
+              Events.Builder builder = eventBuilderObj.toBuilder();
+              Events eventObj = builder.build();
+              
+             System.out.println("Receive event" + eventObj.getGlobalStart());
+              events event = new events();
+              event.setCharacters(eventObj.getInsertCharacters());
+              event.setGlobalCursor(eventObj.getGlobalStart());
+              event.setGlobalIndex(-1);
+              event.setInsertLength(eventObj.getInsertLength());
+              event.setRemovedCharacters(eventObj.getRemoveCharacters());
+              event.setRemoveLength(eventObj.getRemoveLength());
+              event.setUsername(eventObj.getUsername());
+              event.setGlobalOrderId(orderId);
+              
+              activity.handler.receiveGlobal(event, true);
             }
             catch( InvalidProtocolBufferException e )
             {
               e.printStackTrace();
             }
             
-            events event = new events();
-            event.setCharacters(eventObj.getInsertCharacters());
-            event.setGlobalCursor(eventObj.getGlobalStart());
-            event.setGlobalIndex(-1);
-            event.setInsertLength(eventObj.getInsertLength());
-            event.setRemovedCharacters(eventObj.getRemoveCharacters());
-            event.setRemoveLength(eventObj.getRemoveLength());
-            event.setUsername(eventObj.getUsername());
-            event.setGlobalOrderId(orderId);
+            System.out.println("Event does received!");
             
-            activity.handler.receiveGlobal(event, true);
-            activity.editText.setFocusable(true);
-            activity.editText.setFocusableInTouchMode(true);
+            activity.editText.setSelection(cursor);
+            activity.editText.setEnabled(true);
             activity.editText.addTextChangedListener(activity.textWatcher);
+            //activity.editText.setFocusableInTouchMode(true);
           }
         });
       }
@@ -147,7 +159,6 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           public void run()
           {
             activity.newSessionButton.setText(activity.sessionName);
-            activity.editText.setFocusable(false);
           }
         });
       }
@@ -174,9 +185,10 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           {
             activity.joinSessionButton.setText(activity.sessionName);
             if (baseFileSize > 0){
-              activity.editText.setFocusable(false);
               activity.dialog = ProgressDialog.show(activity, "Downloading base file...", "Please wait...", true);
             }
+            else
+              activity.editText.addTextChangedListener(activity.textWatcher);
           }
         });
       }
@@ -239,12 +251,9 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
               @Override
               public void run()
               {
-                activity.editText.removeTextChangedListener(activity.textWatcher);
                 activity.editText.setText(activity.baseFileReceiveBuffer.toString());
                 activity.dialog.dismiss();
                 activity.editText.addTextChangedListener(activity.textWatcher);
-                activity.editText.setFocusableInTouchMode(true);
-                activity.editText.setFocusable(true);
               }
             });
             activity.baseFileReceiveBuffer.close();
@@ -273,8 +282,6 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           public void run()
           {
             activity.dialog.dismiss();
-            activity.editText.setFocusableInTouchMode(true);
-            activity.editText.setFocusable(true);
           }
         });
         try

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import android.app.Activity;
+
 public class eventHandler {
   private List<events> local = new ArrayList<events>();
   private List<Integer> lastLocal = new ArrayList<Integer>();
@@ -13,15 +15,17 @@ public class eventHandler {
   private int confirmedGlobalOrderId = 0;
   private int localComfirmPointer = -1;
   private String username;
+  private SessionActivity activity;
   
   public int getGlobalOrderId()
   {
     return confirmedGlobalOrderId;
   }
   
-  eventHandler(String username)
+  eventHandler(String username, SessionActivity activity)
   {
     this.username = username;
+    this.activity = activity;
   }
   
   private int applyAffect(events event, int originalGlobalCursor)
@@ -160,7 +164,7 @@ public class eventHandler {
   public void receiveGlobal(events event, boolean isLast)
   {
     // get text
-    String currentText = "";
+    String currentText = activity.editText.getText().toString();
     int i;
     
     // undo unconfirmed local events, modify the global event,
@@ -216,18 +220,25 @@ public class eventHandler {
     }
 
     confirmedGlobalOrderId = event.getAfterGlobalOrderId(); 
+    
+    //activity.editText.setEnabled(true);
+    //activity.editText.setFocusable(false);
     // set text 
+    activity.editText.setText(currentText);
+   // activity.editText.setEnabled(false);
+    //activity.editText.setFocusableInTouchMode(true);
   }
   
   // how to get and set text???
-  public void undo()
+  public events undo()
   {
+    events newEvent = null;
     if (localPointer != -1)
     {
       //get text;
-      String text = "";
+      String text = activity.editText.getText().toString();
       
-      events newEvent = new events(getReverseEvent(local.get(localPointer)));
+      newEvent = new events(getReverseEvent(local.get(localPointer)));
       newEvent.setAfterGlobalOrderId(confirmedGlobalOrderId);
       newEvent.setGlobalIndex(global.size());
       newEvent.setGlobalOrderId(-1);
@@ -240,21 +251,22 @@ public class eventHandler {
         nextLocal.set(localPointer, local.size()-1);
       lastLocal.add(Integer.valueOf(localPointer));
       text = applyEvent(text, newEvent);
-      // send event
-        
-      //set text;
       
+      //set text;
+      activity.editText.setText(text);
     }
-    
+    //return event
+    return newEvent;
   }
   
-  public void redo()
+  public events redo()
   {
+    events newEvent = null;
     if (((localPointer != -1) && (nextLocal.get(localPointer).intValue() != -1))
         || ((localPointer == -1) && (local.size() > 0)))
     {
       //get text;
-      String text = "";
+      String text = activity.editText.getText().toString();
       
       int redoPointer = -1;
       if ((localPointer == -1) && (local.size() > 0))
@@ -264,7 +276,7 @@ public class eventHandler {
       else
         System.out.println("This should not happen!");
       
-      events newEvent = new events(getReverseEvent(local.get(redoPointer)));
+      newEvent = new events(getReverseEvent(local.get(redoPointer)));
       newEvent.setAfterGlobalOrderId(confirmedGlobalOrderId);
       newEvent.setGlobalIndex(global.size());
       newEvent.setGlobalOrderId(-1);
@@ -277,30 +289,11 @@ public class eventHandler {
       lastLocal.add(Integer.valueOf(localPointer));
       localPointer = local.size() - 1;
       text = applyEvent(text, newEvent);
-      // send event
         
       //set text;
-      
+      activity.editText.setText(text);
     }
-
-    
-    //get text;
-    String text = "";
-    
-    if (localPointer < local.size() - 1)
-    {
-        events newEvent = new events(local.get(localPointer));
-        newEvent.setAfterGlobalOrderId(confirmedGlobalOrderId);
-        newEvent.setGlobalIndex(global.size());
-        newEvent.setGlobalOrderId(-1);
-        localPointer++;
-        global.add(newEvent);
-        text = applyEvent(text, newEvent);
-        // send event
-        
-    }
-    
-    //set text;
-    
+    //return event
+    return newEvent;
   }
 }

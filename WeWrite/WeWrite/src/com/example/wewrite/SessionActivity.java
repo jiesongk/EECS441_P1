@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
 
+import com.example.wewrite.ProtocalBuffer.Events;
+
 import edu.umich.imlc.collabrify.client.CollabrifyClient;
 import edu.umich.imlc.collabrify.client.exceptions.CollabrifyException;
 import android.app.Activity;
@@ -59,6 +61,29 @@ public class SessionActivity extends Activity
 
   protected TextView broadcastedText;
 
+  protected void sentEventThroughPB(events event)
+  {
+    ProtocalBuffer.Events.Builder builder = ProtocalBuffer.Events.newBuilder();
+    builder.setUsername(userDisplayName);
+    builder.setInsertCharacters(event.getCharacters());
+    builder.setInsertLength(event.getInsertLength());
+    builder.setRemoveCharacters(event.getRemovedCharacters());
+    builder.setRemoveLength(event.getRemoveLength());
+    builder.setGlobalStart(event.getGlobalCursor());
+    builder.setAfterGlobalOrderId(event.getAfterGlobalOrderId());
+    ProtocalBuffer.Events eventObj = builder.build();
+    
+    if (myClient != null && myClient.inSession()){
+      try
+      {
+        myClient.broadcast(eventObj.toByteArray(), "");
+      }
+      catch( CollabrifyException e )
+      {
+        e.printStackTrace();
+      }
+    }
+  }
   
   @Override
   protected void onCreate(Bundle savedInstanceState)
@@ -82,7 +107,7 @@ public class SessionActivity extends Activity
     
     dialog = new ProgressDialog(this);
     collabrifyListener = new CollabrifyExtendedListener(this);
-    handler = new eventHandler(userDisplayName);
+    handler = new eventHandler(userDisplayName, this);
     
     boolean getLatestEvent = false;
     
@@ -102,13 +127,19 @@ public class SessionActivity extends Activity
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
+        //editText.setFocusable(false);
+        int cursor = editText.getSelectionStart();
+        editText.removeTextChangedListener(textWatcher); 
+        editText.setEnabled(false);
+
+        
         System.out.println(prevS);
         System.out.println(s);
         System.out.println(start);
         System.out.println(before);
         System.out.println(count);
 
-        ProtocalBuffer.Events.Builder builder = ProtocalBuffer.Events.newBuilder();
+        Events.Builder builder = Events.newBuilder();
         builder.setUsername(userDisplayName);
         builder.setInsertCharacters(s.subSequence(start, start+count).toString());
         builder.setInsertLength(count);
@@ -116,18 +147,21 @@ public class SessionActivity extends Activity
         builder.setRemoveLength(before);
         builder.setGlobalStart(start);
         builder.setAfterGlobalOrderId(handler.getGlobalOrderId());
-        ProtocalBuffer.Events eventObj = builder.build();
+        Events eventObj = builder.build();
         
+        System.out.println("Event Broadcasted!");
         if (myClient != null && myClient.inSession()){
           try
           {
-            myClient.broadcast(eventObj.toString().getBytes(), "");
+            myClient.broadcast(eventObj.toByteArray(), "");
           }
           catch( CollabrifyException e )
           {
             e.printStackTrace();
           }
         }
+        
+        System.out.println("Event broadcasted finished!");
         
         events event = new events();
         event.setCharacters(builder.getInsertCharacters());
@@ -139,11 +173,16 @@ public class SessionActivity extends Activity
         event.setUsername(builder.getUsername());
         
         handler.receiveLocal(event);
+        
+        //editText.setFocusable(true);
+        //editText.setFocusableInTouchMode(true);
+        editText.setEnabled(true);
+        editText.addTextChangedListener(textWatcher);
+        editText.setSelection(cursor);
       }
       
     };
     
-    editText.addTextChangedListener(textWatcher);
 
     // Instantiate client object
     try
@@ -157,7 +196,7 @@ public class SessionActivity extends Activity
       e.printStackTrace();
     }
 
-    tags.add("sample");
+    tags.add("qq");
     
     //new session OK
     newSessionButton.setOnClickListener(new OnClickListener()
@@ -173,6 +212,8 @@ public class SessionActivity extends Activity
           sessionName = String.valueOf(sessionId);
           ownerOfSession = true;
 
+          editText.setEnabled(false);
+
           if( withBaseFile.isChecked() )
           {
             // initialize basefile data for this example we will use the session
@@ -185,12 +226,15 @@ public class SessionActivity extends Activity
           }
           else
           {
-            editText.removeTextChangedListener(textWatcher);
             editText.setText("");
-            editText.addTextChangedListener(textWatcher);
             myClient.createSession(sessionName, tags, null, 5000);
           }
           Log.i(TAG, "Session name is " + sessionId);
+          
+          editText.setEnabled(true);
+          
+          editText.addTextChangedListener(textWatcher);
+
         }
         catch( CollabrifyException e )
         {
@@ -229,6 +273,7 @@ public class SessionActivity extends Activity
           if( myClient.inSession() ){
             myClient.leaveSession(ownerOfSession);
             ownerOfSession = false;
+            editText.removeTextChangedListener(textWatcher);
           }
         }
         catch( CollabrifyException e )
@@ -245,6 +290,46 @@ public class SessionActivity extends Activity
       public void onClick(View v)
       {
         finish();
+      }
+    });
+    
+    undoButton.setOnClickListener(new OnClickListener()
+    {
+      
+      @Override
+      public void onClick(View v)
+      {
+        editText.setEnabled(false);
+        editText.removeTextChangedListener(textWatcher);
+        events event = handler.undo();
+        editText.addTextChangedListener(textWatcher);
+        editText.setEnabled(true);
+        
+        if (event != null)
+        {
+          //sent event
+          sentEventThroughPB(event);
+        }
+      }
+    });
+    
+    redoButton.setOnClickListener(new OnClickListener()
+    {
+      
+      @Override
+      public void onClick(View v)
+      {
+        editText.setEnabled(false);
+        editText.removeTextChangedListener(textWatcher);
+        events event = handler.redo();
+        editText.addTextChangedListener(textWatcher);
+        editText.setEnabled(true);
+        
+        if (event != null)
+        {
+          //sent event
+          sentEventThroughPB(event);
+        }
       }
     });
   }

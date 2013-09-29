@@ -86,13 +86,13 @@ public final class ProtocalBuffer {
     com.google.protobuf.ByteString
         getUsernameBytes();
 
-    // required int32 afterGlobalOrderId = 7;
+    // required sint32 afterGlobalOrderId = 7;
     /**
-     * <code>required int32 afterGlobalOrderId = 7;</code>
+     * <code>required sint32 afterGlobalOrderId = 7;</code>
      */
     boolean hasAfterGlobalOrderId();
     /**
-     * <code>required int32 afterGlobalOrderId = 7;</code>
+     * <code>required sint32 afterGlobalOrderId = 7;</code>
      */
     int getAfterGlobalOrderId();
   }
@@ -179,7 +179,7 @@ public final class ProtocalBuffer {
             }
             case 56: {
               bitField0_ |= 0x00000040;
-              afterGlobalOrderId_ = input.readInt32();
+              afterGlobalOrderId_ = input.readSInt32();
               break;
             }
           }
@@ -399,17 +399,17 @@ public final class ProtocalBuffer {
       }
     }
 
-    // required int32 afterGlobalOrderId = 7;
+    // required sint32 afterGlobalOrderId = 7;
     public static final int AFTERGLOBALORDERID_FIELD_NUMBER = 7;
     private int afterGlobalOrderId_;
     /**
-     * <code>required int32 afterGlobalOrderId = 7;</code>
+     * <code>required sint32 afterGlobalOrderId = 7;</code>
      */
     public boolean hasAfterGlobalOrderId() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>required int32 afterGlobalOrderId = 7;</code>
+     * <code>required sint32 afterGlobalOrderId = 7;</code>
      */
     public int getAfterGlobalOrderId() {
       return afterGlobalOrderId_;
@@ -483,7 +483,7 @@ public final class ProtocalBuffer {
         output.writeBytes(6, getUsernameBytes());
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeInt32(7, afterGlobalOrderId_);
+        output.writeSInt32(7, afterGlobalOrderId_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -520,7 +520,7 @@ public final class ProtocalBuffer {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(7, afterGlobalOrderId_);
+          .computeSInt32Size(7, afterGlobalOrderId_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1127,22 +1127,22 @@ public final class ProtocalBuffer {
         return this;
       }
 
-      // required int32 afterGlobalOrderId = 7;
+      // required sint32 afterGlobalOrderId = 7;
       private int afterGlobalOrderId_ ;
       /**
-       * <code>required int32 afterGlobalOrderId = 7;</code>
+       * <code>required sint32 afterGlobalOrderId = 7;</code>
        */
       public boolean hasAfterGlobalOrderId() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>required int32 afterGlobalOrderId = 7;</code>
+       * <code>required sint32 afterGlobalOrderId = 7;</code>
        */
       public int getAfterGlobalOrderId() {
         return afterGlobalOrderId_;
       }
       /**
-       * <code>required int32 afterGlobalOrderId = 7;</code>
+       * <code>required sint32 afterGlobalOrderId = 7;</code>
        */
       public Builder setAfterGlobalOrderId(int value) {
         bitField0_ |= 0x00000040;
@@ -1151,7 +1151,7 @@ public final class ProtocalBuffer {
         return this;
       }
       /**
-       * <code>required int32 afterGlobalOrderId = 7;</code>
+       * <code>required sint32 afterGlobalOrderId = 7;</code>
        */
       public Builder clearAfterGlobalOrderId() {
         bitField0_ = (bitField0_ & ~0x00000040);
@@ -1190,7 +1190,7 @@ public final class ProtocalBuffer {
       "ngth\030\002 \002(\005\022\024\n\014insertLength\030\003 \002(\005\022\030\n\020inse" +
       "rtCharacters\030\004 \002(\t\022\030\n\020removeCharacters\030\005" +
       " \002(\t\022\020\n\010username\030\006 \002(\t\022\032\n\022afterGlobalOrd" +
-      "erId\030\007 \002(\005B\020B\016ProtocalBuffer"
+      "erId\030\007 \002(\021B\020B\016ProtocalBuffer"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
