@@ -55,10 +55,10 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           {    
             Utils.printMethodName(activity.TAG);
 
-            //activity.editText.setFocusable(false);
-            activity.editText.setEnabled(false);
-            int cursor = activity.editText.getSelectionStart();
-            activity.editText.removeTextChangedListener(activity.textWatcher);
+            activity.editText.setFocusable(false);
+            //activity.editText.setEnabled(false);
+            //int cursor = activity.editText.getSelectionStart();
+            //activity.editText.removeTextChangedListener(activity.textWatcher);
 
             System.out.println("Event Received!");
             try
@@ -77,6 +77,7 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
               event.setRemoveLength(eventObj.getRemoveLength());
               event.setUsername(eventObj.getUsername());
               event.setGlobalOrderId(orderId);
+              event.setAfterGlobalOrderId(eventObj.getAfterGlobalOrderId());
               
               activity.handler.receiveGlobal(event, true);
             }
@@ -87,10 +88,10 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
             
             System.out.println("Event does received!");
             
-            activity.editText.addTextChangedListener(activity.textWatcher);
-            activity.editText.setSelection(cursor);
-            activity.editText.setEnabled(true);
-            //activity.editText.setFocusableInTouchMode(true);
+            //activity.editText.addTextChangedListener(activity.textWatcher);
+           // activity.editText.setSelection(cursor);
+            //activity.editText.setEnabled(true);
+            activity.editText.setFocusableInTouchMode(true);
           }
         });
       }

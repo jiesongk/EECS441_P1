@@ -127,11 +127,10 @@ public class SessionActivity extends Activity
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
-        //editText.setFocusable(false);
         editText.removeTextChangedListener(textWatcher); 
-        int cursor = editText.getSelectionStart();
-        editText.setEnabled(false);
-
+        //int cursor = editText.getSelectionStart();
+        //editText.setEnabled(false);
+        editText.setFocusable(false);
         
         System.out.println(prevS);
         System.out.println(s);
@@ -147,6 +146,7 @@ public class SessionActivity extends Activity
         builder.setRemoveLength(before);
         builder.setGlobalStart(start);
         builder.setAfterGlobalOrderId(handler.getGlobalOrderId());
+        System.out.println(handler.getGlobalOrderId());
         Events eventObj = builder.build();
         
         System.out.println("Event Broadcasted!");
@@ -175,10 +175,10 @@ public class SessionActivity extends Activity
         handler.receiveLocal(event);
         
         //editText.setFocusable(true);
-        //editText.setFocusableInTouchMode(true);
         editText.addTextChangedListener(textWatcher);
-        editText.setSelection(cursor);
-        editText.setEnabled(true);
+        //editText.setSelection(cursor);
+        editText.setFocusableInTouchMode(true);
+
       }
       
     };
@@ -196,7 +196,7 @@ public class SessionActivity extends Activity
       e.printStackTrace();
     }
 
-    tags.add("mm");
+    tags.add("nn");
     
     //new session OK
     newSessionButton.setOnClickListener(new OnClickListener()

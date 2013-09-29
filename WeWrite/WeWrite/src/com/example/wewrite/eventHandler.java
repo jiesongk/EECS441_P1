@@ -153,6 +153,7 @@ public class eventHandler {
 //    while (local.size() > localPointer + 1)
 //      local.remove(local.size() - 1);
     event.setAfterGlobalOrderId(confirmedGlobalOrderId);
+    System.out.println("receiveLocal: " + confirmedGlobalOrderId);
     event.setGlobalIndex(global.size());
     event.setGlobalOrderId(-1);
     event.setLocalIndex(local.size());
@@ -166,6 +167,8 @@ public class eventHandler {
     // get text
     String currentText = activity.editText.getText().toString();
     int i;
+    
+    System.out.println(event.getUsername().equals(username) + " " + event.getGlobalCursor() + " " + event.getInsertLength() + " " + event.getAfterGlobalOrderId() + " " + event.getGlobalOrderId());
     
     // undo unconfirmed local events, modify the global event,
     // add the event and apply affects and redo local operation
@@ -183,17 +186,22 @@ public class eventHandler {
       
       i = global.size() - 1;
       while ((i >= 0) && (global.get(i).getGlobalOrderId() > event.getAfterGlobalOrderId()))
+      {
+        System.out.println("Global Order: event: " + i + " " + global.get(i).getGlobalOrderId() + " " + event.getAfterGlobalOrderId());
         --i;
+      }
       ++i;
       //modify the global event
       while (i < global.size())
       {
         if (!global.get(i).getUsername().equals(event.getUsername()))
           event.setGlobalCursor(applyAffect(global.get(i), event.getGlobalCursor()));
+        System.out.println("Modify event: " + event.getGlobalCursor() + " " + global.get(i).getGlobalCursor() + " " + global.get(i).getInsertLength());
         ++i;
       }
       // add the event
       event.setGlobalIndex(global.size());
+      System.out.println(event.getGlobalCursor());
       global.add(event);
       currentText = applyEvent(currentText, event);
       // apply affects and redo local operation
@@ -219,12 +227,15 @@ public class eventHandler {
       global.get(i).setGlobalOrderId(event.getGlobalOrderId());
     }
 
-    confirmedGlobalOrderId = event.getAfterGlobalOrderId(); 
-    
+    confirmedGlobalOrderId = (int) event.getGlobalOrderId(); 
+    System.out.println("receiveGlobal: " + confirmedGlobalOrderId);
     //activity.editText.setEnabled(true);
     //activity.editText.setFocusable(false);
+    activity.editText.removeTextChangedListener(activity.textWatcher);
     // set text 
     activity.editText.setText(currentText);
+    activity.editText.addTextChangedListener(activity.textWatcher);
+
    // activity.editText.setEnabled(false);
     //activity.editText.setFocusableInTouchMode(true);
   }
