@@ -37,6 +37,7 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
           {
             activity.newSessionButton.setText("Create");
             activity.joinSessionButton.setText("Join");
+            activity.handler.clear();
           }
         });
       }
@@ -89,7 +90,9 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
             System.out.println("Event does received!");
             
             //activity.editText.addTextChangedListener(activity.textWatcher);
-           // activity.editText.setSelection(cursor);
+           /* if ( cursor >=0 && cursor <= activity.editText.getText().length())
+              activity.editText.setSelection(cursor);
+            else activity.editText.setSelection(activity.editText.getText().length());*/
             //activity.editText.setEnabled(true);
             activity.editText.setFocusableInTouchMode(true);
           }

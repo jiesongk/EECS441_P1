@@ -35,7 +35,6 @@ public class eventHandler {
     localPointer = -1;
     confirmedGlobalOrderId = 0;
     //localConfirmPointer = -1;
-    
   }
   
   eventHandler(String username, SessionActivity activity)
@@ -226,6 +225,7 @@ public class eventHandler {
       {
         tempStack.get(i).setGlobalCursor(applyAffect(event, tempStack.get(i).getGlobalCursor()));
         local.get(tempStack.get(i).getLocalIndex()).setGlobalIndex(global.size());
+        local.get(tempStack.get(i).getLocalIndex()).setGlobalCursor(tempStack.get(i).getGlobalCursor());
         global.add(tempStack.remove(i));
         currentText = applyEvent(currentText, global.get(global.size() - 1));
         --i;
@@ -245,15 +245,15 @@ public class eventHandler {
 
     confirmedGlobalOrderId = (int) event.getGlobalOrderId(); 
     System.out.println("receiveGlobal: " + confirmedGlobalOrderId);
-    //activity.editText.setEnabled(true);
-    //activity.editText.setFocusable(false);
+
+    int cursor = activity.editText.getSelectionStart();
     activity.editText.removeTextChangedListener(activity.textWatcher);
     // set text 
     activity.editText.setText(currentText);
     activity.editText.addTextChangedListener(activity.textWatcher);
-
-   // activity.editText.setEnabled(false);
-    //activity.editText.setFocusableInTouchMode(true);
+    if ( cursor >=0 && cursor <= activity.editText.getText().length())
+      activity.editText.setSelection(cursor);
+    else activity.editText.setSelection(activity.editText.getText().length());
   }
   
   // how to get and set text???

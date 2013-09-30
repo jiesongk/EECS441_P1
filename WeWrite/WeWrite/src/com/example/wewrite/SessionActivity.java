@@ -6,13 +6,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
 
-import com.example.wewrite.ProtocalBuffer.Events;
-
-import edu.umich.imlc.collabrify.client.CollabrifyClient;
-import edu.umich.imlc.collabrify.client.exceptions.CollabrifyException;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,11 +20,16 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.wewrite.ProtocalBuffer.Events;
+
+import edu.umich.imlc.collabrify.client.CollabrifyClient;
+import edu.umich.imlc.collabrify.client.exceptions.CollabrifyException;
+
 public class SessionActivity extends Activity
 {
   private static final Level LOGGING_LEVEL = Level.ALL;
 
-  static String TAG = "dummy";
+  static String TAG = "WeWrite";
   
   private ArrayList<String> tags = new ArrayList<String>();
   
@@ -127,16 +127,10 @@ public class SessionActivity extends Activity
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
-        editText.removeTextChangedListener(textWatcher); 
+        //editText.removeTextChangedListener(textWatcher); 
         //int cursor = editText.getSelectionStart();
         //editText.setEnabled(false);
         editText.setFocusable(false);
-        
-        System.out.println(prevS);
-        System.out.println(s);
-        System.out.println(start);
-        System.out.println(before);
-        System.out.println(count);
 
         Events.Builder builder = Events.newBuilder();
         builder.setUsername(userDisplayName);
@@ -174,9 +168,9 @@ public class SessionActivity extends Activity
         
         handler.receiveLocal(event);
         
-        //editText.setFocusable(true);
-        editText.addTextChangedListener(textWatcher);
-        //editText.setSelection(cursor);
+        //editText.setEnabled(true);
+        //editText.addTextChangedListener(textWatcher);
+       // editText.setSelection(cursor);
         editText.setFocusableInTouchMode(true);
 
       }
@@ -196,7 +190,7 @@ public class SessionActivity extends Activity
       e.printStackTrace();
     }
 
-    tags.add("nn");
+    tags.add("aa");
     
     //new session OK
     newSessionButton.setOnClickListener(new OnClickListener()
