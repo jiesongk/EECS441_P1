@@ -12,7 +12,7 @@ public class eventHandler {
   private List<Integer> nextLocal = new ArrayList<Integer>();
   private List<events> global = new ArrayList<events>();
   private int localPointer = -1;
-  private int confirmedGlobalOrderId = 0;
+  private int confirmedGlobalOrderId = -1;
   //private int localConfirmPointer = -1;
   private String username;
   private SessionActivity activity;
@@ -33,7 +33,7 @@ public class eventHandler {
     while (!global.isEmpty())
       global.remove(0);
     localPointer = -1;
-    confirmedGlobalOrderId = 0;
+    confirmedGlobalOrderId = -1;
     //localConfirmPointer = -1;
   }
   
