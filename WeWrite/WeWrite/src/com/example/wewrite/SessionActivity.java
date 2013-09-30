@@ -127,9 +127,7 @@ public class SessionActivity extends Activity
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count)
       {
-        //editText.removeTextChangedListener(textWatcher); 
-        //int cursor = editText.getSelectionStart();
-        //editText.setEnabled(false);
+
         editText.setFocusable(false);
 
         Events.Builder builder = Events.newBuilder();
@@ -143,7 +141,6 @@ public class SessionActivity extends Activity
         System.out.println(handler.getGlobalOrderId());
         Events eventObj = builder.build();
         
-        System.out.println("Event Broadcasted!");
         if (myClient != null && myClient.inSession()){
           try
           {
@@ -154,9 +151,7 @@ public class SessionActivity extends Activity
             e.printStackTrace();
           }
         }
-        
-        System.out.println("Event broadcasted finished!");
-        
+                
         events event = new events();
         event.setCharacters(builder.getInsertCharacters());
         event.setGlobalCursor(builder.getGlobalStart());
@@ -166,18 +161,15 @@ public class SessionActivity extends Activity
         event.setRemoveLength(builder.getRemoveLength());
         event.setUsername(builder.getUsername());
         
+        //execute local operation
         handler.receiveLocal(event);
         
-        //editText.setEnabled(true);
-        //editText.addTextChangedListener(textWatcher);
-       // editText.setSelection(cursor);
         editText.setFocusableInTouchMode(true);
 
       }
       
     };
     
-
     // Instantiate client object
     try
     {
@@ -192,7 +184,7 @@ public class SessionActivity extends Activity
 
     tags.add("aa");
     
-    //new session OK
+    //new session 
     newSessionButton.setOnClickListener(new OnClickListener()
     {
 
@@ -210,8 +202,7 @@ public class SessionActivity extends Activity
 
           if( withBaseFile.isChecked() )
           {
-            // initialize basefile data for this example we will use the session
-            // name as the data
+
             dialog = ProgressDialog.show(SessionActivity.this, "Uploading base file...", "Please wait...", true);
 
             baseFileBuffer = new ByteArrayInputStream(editText.getText().toString().getBytes());
@@ -237,7 +228,7 @@ public class SessionActivity extends Activity
       }
     });
     
-  //join session OK
+    //join session 
     joinSessionButton.setOnClickListener(new OnClickListener()
     {
 
@@ -302,7 +293,7 @@ public class SessionActivity extends Activity
         
         if (event != null)
         {
-          //sent event
+          //sent event to local handler for undo
           sentEventThroughPB(event);
         }
       }
@@ -322,13 +313,12 @@ public class SessionActivity extends Activity
         
         if (event != null)
         {
-          //sent event
+          //sent event to local handler for redo
           sentEventThroughPB(event);
         }
       }
     });
   }
-
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu)

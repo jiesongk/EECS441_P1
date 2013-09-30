@@ -63,25 +63,6 @@ public class eventHandler {
     return newGlobalCursor;
   }
   
-  private int revertAffect(events event, int originalGlobalCursor)
-  {
-    int newGlobalCursor = originalGlobalCursor;
-    
-    if (event.getRemoveLength() == 0)
-    {
-      if (event.getGlobalCursor() < newGlobalCursor)
-        newGlobalCursor -= event.getInsertLength();
-      if (newGlobalCursor < 0)
-        newGlobalCursor = 0;
-    } else if (event.getInsertLength() == 0)
-    {
-      if (event.getGlobalCursor() <= newGlobalCursor)
-        newGlobalCursor += event.getRemoveLength();
-    }
-    
-    return newGlobalCursor;
-  }
-  
   private events getReverseEvent(events originalEvent)
   {
     events reverseEvent = new events(originalEvent);
@@ -168,7 +149,6 @@ public class eventHandler {
 //    while (local.size() > localPointer + 1)
 //      local.remove(local.size() - 1);
     event.setAfterGlobalOrderId(confirmedGlobalOrderId);
-    System.out.println("receiveLocal: " + confirmedGlobalOrderId);
     event.setGlobalIndex(global.size());
     event.setGlobalOrderId(-1);
     event.setLocalIndex(local.size());
@@ -182,9 +162,7 @@ public class eventHandler {
     // get text
     String currentText = activity.editText.getText().toString();
     int i;
-    
-    System.out.println(event.getUsername().equals(username) + " " + event.getGlobalCursor() + " " + event.getInsertLength() + " " + event.getAfterGlobalOrderId() + " " + event.getGlobalOrderId());
-    
+        
     // undo unconfirmed local events, modify the global event,
     // add the event and apply affects and redo local operation
     if (!event.getUsername().equals(username))
@@ -202,7 +180,6 @@ public class eventHandler {
       i = global.size() - 1;
       while ((i >= 0) && (global.get(i).getGlobalOrderId() > event.getAfterGlobalOrderId()))
       {
-        System.out.println("Global Order: event: " + i + " " + global.get(i).getGlobalOrderId() + " " + event.getAfterGlobalOrderId());
         --i;
       }
       ++i;
@@ -211,12 +188,10 @@ public class eventHandler {
       {
         if (!global.get(i).getUsername().equals(event.getUsername()))
           event.setGlobalCursor(applyAffect(global.get(i), event.getGlobalCursor()));
-        System.out.println("Modify event: " + event.getGlobalCursor() + " " + global.get(i).getGlobalCursor() + " " + global.get(i).getInsertLength());
         ++i;
       }
       // add the event
       event.setGlobalIndex(global.size());
-      System.out.println(event.getGlobalCursor());
       global.add(event);
       currentText = applyEvent(currentText, event);
       // apply affects and redo local operation
@@ -244,7 +219,6 @@ public class eventHandler {
     }
 
     confirmedGlobalOrderId = (int) event.getGlobalOrderId(); 
-    System.out.println("receiveGlobal: " + confirmedGlobalOrderId);
 
     int cursor = activity.editText.getSelectionStart();
     activity.editText.removeTextChangedListener(activity.textWatcher);

@@ -57,18 +57,13 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
             Utils.printMethodName(activity.TAG);
 
             activity.editText.setFocusable(false);
-            //activity.editText.setEnabled(false);
-            //int cursor = activity.editText.getSelectionStart();
-            //activity.editText.removeTextChangedListener(activity.textWatcher);
 
-            System.out.println("Event Received!");
             try
             {
               Events eventBuilderObj = Events.parseFrom(data);
               Events.Builder builder = eventBuilderObj.toBuilder();
               Events eventObj = builder.build();
               
-             System.out.println("Receive event" + eventObj.getGlobalStart());
               events event = new events();
               event.setCharacters(eventObj.getInsertCharacters());
               event.setGlobalCursor(eventObj.getGlobalStart());
@@ -87,13 +82,6 @@ public class CollabrifyExtendedListener extends CollabrifyAdapter{
               e.printStackTrace();
             }
             
-            System.out.println("Event does received!");
-            
-            //activity.editText.addTextChangedListener(activity.textWatcher);
-           /* if ( cursor >=0 && cursor <= activity.editText.getText().length())
-              activity.editText.setSelection(cursor);
-            else activity.editText.setSelection(activity.editText.getText().length());*/
-            //activity.editText.setEnabled(true);
             activity.editText.setFocusableInTouchMode(true);
           }
         });
